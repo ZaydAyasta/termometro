@@ -1,0 +1,28 @@
+{
+  "name": "Mi Termómetro Emocional",
+  "short_name": "Termómetro",
+  "description": "Herramienta terapéutica para niños: identifica, mide y regula tus emociones.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f6ff",
+  "theme_color": "#1769bd",
+  "lang": "es",
+  "categories": ["education", "health"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

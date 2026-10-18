@@ -1,0 +1,40 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mi termómetro emocional</title><style>
+
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial;background:#f5f8ff;color:#19305a}main{max-width:850px;margin:auto;padding:18px}h1{text-align:center;font-size:clamp(25px,5vw,40px)}.panel{background:white;border-radius:24px;padding:22px;margin:15px 0;box-shadow:0 3px 15px #142b4b15}.row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}.choice{border:2px solid #c9d5e9;border-radius:16px;padding:12px;background:white;font-size:19px;min-height:55px;cursor:pointer}.choice[aria-pressed=true]{border-color:#1769bd;background:#e5f2ff}.choices{display:flex;gap:9px;flex-wrap:wrap}.thermo{width:90px;height:320px;border-radius:48px;border:5px solid #45607f;position:relative;overflow:hidden;background:linear-gradient(to top,#56b8ed,#8adca3 30%,#ffe278 55%,#ff9c5a 77%,#fa647a)}.indicator{position:absolute;bottom:40%;width:100%;height:7px;background:#172744;box-shadow:0 0 0 2px white}input[type=range]{width:min(100%,400px);accent-color:#1769bd;min-height:50px}.value{font-size:52px;font-weight:800}.tool{font-size:18px;padding:16px;min-height:58px}button{touch-action:manipulation}.hidden{display:none}#window{width:100%;padding:18px;background:#e6f2ff;font-size:21px;font-weight:bold}#message{font-size:20px}small{color:#455874}input[type=checkbox]{width:22px;height:22px}label{font-size:18px}#feedback{font-size:21px;font-weight:bold}
+
+</style></head><body><main><h1>🌡️ Mi termómetro emocional</h1><p style="text-align:center">Toca, elige y descubre qué te ayuda a sentirte mejor.</p><section class="panel"><h2>1. ¿Qué emoción siento?</h2><div class="choices" id="emotions"><button class="choice" aria-pressed="true">😠 Enojo</button><button class="choice" aria-pressed="false">😢 Tristeza</button><button class="choice" aria-pressed="false">😨 Miedo</button><button class="choice" aria-pressed="false">😄 Alegría</button><button class="choice" aria-pressed="false">😟 Nervios</button></div></section><section class="panel"><h2>2. ¿Qué tan fuerte se siente?</h2><div class="row"><div class="thermo" aria-hidden="true"><div class="indicator" id="indicator"></div></div><div style="flex:1;min-width:170px"><div class="value"><span id="number">4</span>/10</div><input id="level" aria-label="Intensidad de la emoción" type="range" min="0" max="10" value="4"><p id="zone">🟡 Emoción moderada</p><p id="message">Puedo hacer una pausa y buscar una herramienta.</p></div></div></section><section class="panel"><h2>3. ¿Dónde la siento en mi cuerpo?</h2><div class="choices"><label><input type="checkbox"> 💓 Corazón</label><label><input type="checkbox"> ✊ Manos tensas</label><label><input type="checkbox"> 🌬️ Respiración</label><label><input type="checkbox"> 🦋 Barriga</label><label><input type="checkbox"> 😢 Ganas de llorar</label></div></section><section class="panel"><h2>4. Abro mi ventanita de herramientas</h2><button id="window" class="choice" aria-expanded="false">🚪 Abrir ventanita ✨</button><div id="tools" class="hidden"><p>¿Qué me gustaría probar?</p><div class="choices" id="toolChoices"></div><p id="feedback" aria-live="polite"></p><h3>¿Cómo me siento después?</h3><div class="value"><span id="afterNum">4</span>/10</div><input id="after" aria-label="Intensidad después" type="range" min="0" max="10" value="4"></div></section><p><small>Las emociones son señales, no son malas. Puedo pedir ayuda a un adulto en cualquier nivel. No necesito llegar a cero para estar bien.</small></p><button class="choice" id="reset">🔄 Empezar otra vez</button></main><script>
+
+let ctx;function sound(f=500){try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();let o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.055,ctx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.18);o.connect(g).connect(ctx.destination);o.start();o.stop(ctx.currentTime+.2)}catch(e){}}
+
+function emotionSound(name){
+  try {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const origin = ctx.currentTime;
+    function note(from, offset, duration, to, type='sine', volume=.06) {
+      const oscillator=ctx.createOscillator(), gain=ctx.createGain();
+      oscillator.type=type;
+      oscillator.frequency.setValueAtTime(from,origin+offset);
+      if(to) oscillator.frequency.exponentialRampToValueAtTime(to,origin+offset+duration);
+      gain.gain.setValueAtTime(.0001,origin+offset);
+      gain.gain.exponentialRampToValueAtTime(volume,origin+offset+.025);
+      gain.gain.exponentialRampToValueAtTime(.0001,origin+offset+duration);
+      oscillator.connect(gain).connect(ctx.destination);
+      oscillator.start(origin+offset);oscillator.stop(origin+offset+duration+.02);
+    }
+    if(name.includes('Enojo')) {note(140,0,.3,87,'sawtooth',.025);note(108,.29,.25,80,'sawtooth',.025);}
+    else if(name.includes('Tristeza')) {note(440,0,.32,330);note(330,.3,.42,220);}
+    else if(name.includes('Miedo')) {note(510,0,.16,610,'triangle');note(640,.19,.21,490,'triangle');}
+    else if(name.includes('Alegría')) {note(523,0,.14);note(659,.16,.14);note(784,.33,.25);}
+    else if(name.includes('Nervios')) {note(430,0,.12);note(465,.15,.12);note(430,.30,.12);}
+    else {note(440,0,.18);}
+  }catch(e){ /* Optional audio: never block the activity if muted or unsupported. */ }
+}
+
+const level=document.getElementById('level'),after=document.getElementById('after');function render(){let n=+level.value;document.getElementById('number').textContent=n;document.getElementById('indicator').style.bottom=n*10+'%';document.getElementById('zone').textContent=n===0?'🔵 Tranquilidad':n<=3?'🟢 Emoción leve':n<=6?'🟡 Emoción moderada':n<=8?'🟠 Emoción alta':'🔴 Emoción muy alta';document.getElementById('message').textContent=n>=7?'Puedo pedir compañía y ayuda a un adulto.':n>=4?'Puedo hacer una pausa y buscar una herramienta.':'Puedo notar cómo se siente mi cuerpo.';after.value=n;document.getElementById('afterNum').textContent=n}
+level.addEventListener('input',()=>{render();sound(320+Number(level.value)*45)});after.addEventListener('input',()=>{document.getElementById('afterNum').textContent=after.value;sound(400)});document.querySelectorAll('#emotions button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#emotions button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');emotionSound(b.textContent)}));
+document.getElementById('window').addEventListener('click',()=>{let el=document.getElementById('tools'),open=el.classList.toggle('hidden')===false;document.getElementById('window').setAttribute('aria-expanded',open);document.getElementById('window').textContent=open?'🚪 Cerrar ventanita':'🚪 Abrir ventanita ✨';sound(open?650:400)});
+['🌬️ Respirar despacio','🧸 Abrazar un peluche','🎨 Dibujar','💬 Hablar con un adulto','🛋️ Descansar','🎵 Escuchar música','🚶 Caminar','💧 Tomar agua'].forEach((t,i)=>{let b=document.createElement('button');b.className='choice tool';b.textContent=t;b.addEventListener('click',()=>{document.getElementById('feedback').textContent='¡Elegiste '+t+'!';sound(550+i*35)});document.getElementById('toolChoices').appendChild(b)});
+document.getElementById('reset').addEventListener('click',()=>{level.value=4;render();document.querySelectorAll('input[type=checkbox]').forEach(x=>x.checked=false);document.getElementById('feedback').textContent='';sound(480)});render();
+
+</script></body></html>
